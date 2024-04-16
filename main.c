@@ -50,17 +50,18 @@ int main(int argc, char **argv) {
   }
 
   if (encode) {
-    if (((width * height * 3) / 4) < file_size) {
+    if (((width * height * 3) / 4) + 1 < file_size) {
       perror("Image to small for file");
       fclose(file);
       return 1;
     }
 
     // Load file into mem
-    unsigned char *buffer = (unsigned char *)malloc(file_size);
+    unsigned char *buffer = (unsigned char *)malloc(file_size + 1);
+    buffer[file_size] = 0;
     size_t bytes_read = fread(buffer, 1, file_size, file);
 
-    for (unsigned char *fb = buffer, *ib = img; fb < buffer + file_size;
+    for (unsigned char *fb = buffer, *ib = img; fb < buffer + file_size + 1;
          fb++, ib += 4) {
       *(ib + 0) = (*(ib + 0) & 0xFC) | ((*fb & 0x03) >> 0);
       *(ib + 1) = (*(ib + 1) & 0xFC) | ((*fb & 0x0C) >> 2);
@@ -84,6 +85,10 @@ int main(int argc, char **argv) {
          fb++, ib += 4) {
       *fb = ((*(ib + 3) & 0x03) << 6) | ((*(ib + 2) & 0x03) << 4) |
             ((*(ib + 1) & 0x03) << 2) | ((*(ib + 0) & 0x03) << 0);
+      if (*fb == 0) {
+        file_size = fb - buffer;
+        break;
+      }
     }
     fwrite(buffer, 1, file_size, file);
   }

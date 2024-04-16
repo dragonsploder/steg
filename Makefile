@@ -3,4 +3,4 @@ IN=main.c
 NAME=steg
 
 all:
-	$(CC) $(IN) -g -lm -o $(NAME)
+	$(CC) $(IN) -O3 -lm -o $(NAME)
